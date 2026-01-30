@@ -1,5 +1,19 @@
 import mongoose, { Schema } from 'mongoose';
 
+const TestQuestionSchema = new Schema({
+  question: { type: String, required: true },
+  options: {
+    type: [String],
+    validate: [(arr) => arr.length === 4, '4 options required'],
+  },
+  correctOptionIndex: {
+    type: Number,
+    min: 0,
+    max: 3,
+    required: true,
+  },
+});
+
 const ModuleSchema = new Schema({
   title: {
     type: String,
@@ -18,6 +32,14 @@ const ModuleSchema = new Schema({
   assetLink: {
     type: String,
     required: [true, 'Asset link is required'],
+  },
+  // ✅ NEW
+  test: {
+    questions: [TestQuestionSchema],
+    passPercentage: {
+      type: Number,
+      default: 60,
+    },
   },
 });
 

@@ -5,10 +5,13 @@ import userPurchasedCoursesController from '../../controllers/user/courses/userP
 import { getAllCoursesController } from '../../controllers/user/courses/getAllCoursesController.js';
 import { getUserProfileController } from '../../controllers/user/data/getUserProfileController.js';
 import { getUserOneCourseController } from '../../controllers/user/courses/getUserOneCourseController.js';
-
+import markModuleCompleteController from '../../controllers/user/courses/markModuleCompleteController.js';
+import submitTestController from '../../controllers/user/courses/submitTestController.js';
+import getTestResultController from"../../controllers/user/courses/getTestResultController.js";
 // Middlewares
 import optionalAuthMiddleware from '../../middleware/optionalUserAuthMiddleware.js';
 import userAuthMiddleware from '../../middleware/userAuthMiddleware.js';
+
 
 const router = express.Router();
 
@@ -18,13 +21,13 @@ const router = express.Router();
  */
 router.get(
   '/get-one-course/:courseId',
-  optionalAuthMiddleware,
+  userAuthMiddleware,
   getUserOneCourseController
 );
 
 router.get(
   '/purchased-courses',
-  optionalAuthMiddleware,
+  userAuthMiddleware,
   userPurchasedCoursesController
 );
 
@@ -46,6 +49,26 @@ router.get(
   '/get-all-courses',
   getAllCoursesController
 );
+
+router.post(
+  "/course/:courseId/module/:moduleId/complete",
+  userAuthMiddleware,
+  markModuleCompleteController
+);
+
+router.post(
+  "/course/:courseId/module/:moduleId/test",
+  userAuthMiddleware,
+  submitTestController
+);
+
+
+router.get(
+  "/course/:courseId/module/:moduleId/test-result",
+  userAuthMiddleware,
+  getTestResultController
+);
+
 
 /**
  * 🌍 Public + Optional Auth

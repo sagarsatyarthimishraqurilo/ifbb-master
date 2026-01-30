@@ -5,8 +5,10 @@ const userPurchasedCoursesController = async (req, res) => {
     const userId = req.user.userId;
 
     const user = await User.findById(userId)
-      .select('purchasedCourses')
-      .populate('purchasedCourses');
+      .populate({
+        path: 'purchasedCourses',
+        select: 'title courseThumbnail description durationToComplete',
+      });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

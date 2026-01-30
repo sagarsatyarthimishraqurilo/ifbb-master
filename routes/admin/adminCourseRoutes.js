@@ -9,6 +9,7 @@ import { editCourseController } from '../../controllers/admin/course/editCourseC
 import adminAuthMiddlware from '../../middleware/adminAuthMiddleware.js';
 import { deleteModuleController } from '../../controllers/admin/course/deleteModuleController.js';
 import { editModuleController } from '../../controllers/admin/course/editModuleController.js';
+import addModuleTestController from '../../controllers/admin/course/addModuleTestController.js'
 
 const router = express.Router();
 
@@ -63,5 +64,8 @@ router.patch(
   getUploader('disk').single('file'),
   editModuleController
 );
+
+router.post("/course/:courseId/module/:moduleId/test", adminAuthMiddlware, addModuleTestController);
+
 
 export default router;

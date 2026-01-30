@@ -44,8 +44,6 @@ app.use(
       "http://localhost:3001",
       "http://localhost:5001",
       "https://393rb0pp-5003.inc1.devtunnels.ms"
-      
-
     ],
     credentials: true,
   })

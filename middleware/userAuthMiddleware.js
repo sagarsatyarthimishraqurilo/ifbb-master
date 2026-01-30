@@ -18,10 +18,7 @@ const userAuthMiddleware = async (req, res, next) => {
     // 🔥 SAME secret as login
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-    const { payload } = await jwtVerify(token, secret, {
-      issuer: 'iifb',
-      audience: 'iifb-audience',
-    });
+    const { payload } = await jwtVerify(token, secret);
 
     req.user = {
       userId: payload.userId,
