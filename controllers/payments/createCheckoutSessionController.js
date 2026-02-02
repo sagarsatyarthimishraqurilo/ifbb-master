@@ -35,6 +35,7 @@ const createCheckoutSession = async (req, res) => {
         courseId: course._id.toString(),
       },
     });
+    console.log("🔥 FRONTEND_URL USED BY STRIPE:", process.env.FRONTEND_URL);
 
     // ✅ IMPORTANT CHANGE
     return res.json({
