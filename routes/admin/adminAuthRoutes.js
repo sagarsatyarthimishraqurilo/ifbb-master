@@ -15,7 +15,7 @@ import deleteAffiliationController from "../../controllers/admin/affiliation/del
 import adminAuthMiddleware from "../../middleware/adminAuthMiddleware.js";
 import getUserProfileController from "../../controllers/admin/user/profile/getUserProfileController.js";
 import authenticateUser from "../../middleware/authenticateUser.js";
-import getAdminProfileController from "../../controllers/admin/user/profile/getAdminProfileController.js";
+import { getAdminProfileController, updateAdminProfileController } from "../../controllers/admin/user/profile/getAdminProfileController.js";
 const router = express.Router();
 
 // ---------- AUTH ----------
@@ -44,5 +44,12 @@ router.get(
   authenticateUser,
   getAdminProfileController
 )
+
+router.put(
+  "/profile",
+  authenticateUser,
+  upload.single("image"),
+  updateAdminProfileController
+);
 
 export default router;

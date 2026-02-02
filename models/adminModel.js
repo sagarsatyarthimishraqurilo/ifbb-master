@@ -1,14 +1,31 @@
-import mongoose, { Schema} from 'mongoose';
-
-
+import mongoose, { Schema } from "mongoose";
 
 const AdminSchema = new Schema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    fullName: {
+      type: String,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+    },
+
+    image: {
+      type: String, // Cloudinary image URL
+      default: null,
+    },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-const Admin = mongoose.model('Admin', AdminSchema);
+const Admin = mongoose.model("Admin", AdminSchema);
 export default Admin;
