@@ -44,12 +44,14 @@ const userPurchasedCoursesController = async (req, res) => {
 
     const courses = user.purchasedCourses.map((course) => {
       const courseObj = course.toObject();
+      const totalModules = courseObj.modules?.length || 0;
 
       // ❌ modules hata diye
       const { modules, ...courseWithoutModules } = courseObj;
 
       return {
         ...courseWithoutModules,
+        totalModules,   
         hasPurchased: true,
       };
     });
