@@ -47,13 +47,19 @@ const getTestResultController = async (req, res) => {
                 (a) => a.questionIndex === index
             );
 
+            const userSelectedOptionIndex =
+                userAnswer?.selectedOptionIndex ?? null;
+
+            const isCorrect =
+                userSelectedOptionIndex !== null &&
+                userSelectedOptionIndex === q.correctOptionIndex;
+
             return {
                 question: q.question,
                 options: q.options,
                 correctOptionIndex: q.correctOptionIndex,
-                userSelectedOptionIndex:
-                    userAnswer?.selectedOptionIndex ?? null,
-                isCorrect: userAnswer?.isCorrect ?? false,
+                userSelectedOptionIndex,
+                isCorrect,
             };
         });
 
