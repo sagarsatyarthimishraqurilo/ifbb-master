@@ -9,24 +9,61 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const stripeSuccessController = async (req, res) => {
     try {
         const { session_id } = req.query;
-        const userId = req.user.userId;
 
+        if (!session_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Session ID missing",
+            });
+        }
+
+        // 1️⃣ Stripe session verify
         const session = await stripe.checkout.sessions.retrieve(session_id);
 
         if (!session || session.payment_status !== "paid") {
-            return res.status(400).json({ message: "Payment not successful" });
+            return res.status(400).json({
+                success: false,
+                message: "Payment not successful",
+            });
         }
 
+        // 2️⃣ Course
         const courseId = session.metadata.courseId;
-
         const course = await Course.findById(courseId);
+
         if (!course) {
-            return res.status(404).json({ message: "Course not found" });
+            return res.status(404).json({
+                success: false,
+                message: "Course not found",
+            });
         }
 
-        // ✅ Save purchase
+        // 3️⃣ User (EMAIL SE)
+        const user = await User.findOne({ email: session.customer_email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        // 4️⃣ Duplicate purchase avoid
+        const alreadyPurchased = await Purchase.findOne({
+            stripeSessionId: session.id,
+        });
+
+        if (alreadyPurchased) {
+            return res.json({
+                success: true,
+                message: "Payment already processed",
+                courseId,
+            });
+        }
+
+        // 5️⃣ Save purchase
         await Purchase.create({
-            user: userId,
+            user: user._id,
             course: courseId,
             amountPaid: session.amount_total / 100,
             currency: session.currency,
@@ -34,22 +71,15 @@ const stripeSuccessController = async (req, res) => {
             paymentStatus: "paid",
         });
 
-
-        // after payment verified
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // 🔥 THIS WAS MISSING
+        // 6️⃣ Update user
         if (!user.purchasedCourses.includes(courseId)) {
             user.purchasedCourses.push(courseId);
             await user.save();
         }
 
-        // ✅ Create course progress (IMPORTANT)
+        // 7️⃣ Create course progress
         await CourseProgress.create({
-            user: userId,
+            user: user._id,
             course: courseId,
             modulesProgress: course.modules.map((m) => ({
                 moduleId: m._id,
@@ -60,10 +90,14 @@ const stripeSuccessController = async (req, res) => {
         return res.json({
             success: true,
             message: "Payment successful, course enrolled",
+            courseId,
         });
     } catch (error) {
         console.error("Stripe success error:", error);
-        return res.status(500).json({ message: "Payment verification failed" });
+        return res.status(500).json({
+            success: false,
+            message: "Payment verification failed",
+        });
     }
 };
 

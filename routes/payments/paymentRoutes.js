@@ -6,6 +6,6 @@ import { authenticateUser } from '../../utils/middlwares.js';
 const router = express.Router();
 
 router.post('/create-checkout-session', createCheckoutSessionController);
-router.get("/stripe-success", authenticateUser, stripeSuccessController);
+router.get("/stripe-success", stripeSuccessController);
 
 export default router;
