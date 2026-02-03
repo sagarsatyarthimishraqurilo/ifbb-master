@@ -1,48 +1,6 @@
-import Course from '../../../models/courseModel.js';
-import User from '../../../models/userModel.js';
-import CourseProgress from '../../../models/CourseProgressModel.js';
-
-/*
-export const getUserOneCourseController = async (req, res) => {
-  try {
-    const { courseId } = req.params;
-
-    let hasPurchased = false;
-
-    // ✅ Course fetch
-    const course = await Course.findById(courseId).lean();
-    if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
-    }
-
-    // ✅ Optional user check
-    if (req.user?.userId) {
-      const user = await User.findById(req.user.userId).select('purchasedCourses');
-
-      hasPurchased = user?.purchasedCourses.some(
-        (id) => id.toString() === courseId
-      );
-    }
-
-    // ✅ Secure modules (hide assetLink if not purchased)
-    course.modules = (course.modules || []).map((module) => {
-      if (hasPurchased) return module;
-
-      const { assetLink, ...safeModule } = module;
-      return safeModule;
-    });
-
-    return res.status(200).json({
-      success: true,
-      ...course,
-      ...(req.user?.userId && { hasPurchased }),
-    });
-  } catch (error) {
-    console.error('Error fetching course:', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
-*/
+import Course from "../../../models/courseModel.js";
+import Purchase from "../../../models/purchaseModel.js";
+import CourseProgress from "../../../models/CourseProgressModel.js";
 
 export const getUserOneCourseController = async (req, res) => {
   try {
@@ -50,14 +8,22 @@ export const getUserOneCourseController = async (req, res) => {
 
     const course = await Course.findById(courseId).lean();
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
 
-    // 🔹 Guest user → everything locked
-    if (!req.user || !req.user.userId) {
-      course.modules = course.modules.map(({ assetLink, ...m }) => ({
+    // 🟡 Guest user
+    if (!req.user?.userId) {
+      course.modules = course.modules.map(({ assetLink, test, ...m }) => ({
         ...m,
         locked: true,
+        test: test
+          ? {
+            ...test,
+            questions: test.questions.map(
+              ({ correctOptionIndex, ...q }) => q
+            ),
+          }
+          : undefined,
       }));
 
       return res.json({
@@ -69,16 +35,28 @@ export const getUserOneCourseController = async (req, res) => {
 
     const userId = req.user.userId;
 
-    const progress = await CourseProgress.findOne({
+    // ✅ ONLY SOURCE OF PURCHASE TRUTH
+    const purchase = await Purchase.findOne({
       user: userId,
       course: courseId,
+      paymentStatus: "paid",
     });
 
-    // 🔹 Not purchased → everything locked
-    if (!progress) {
-      course.modules = course.modules.map(({ assetLink, ...m }) => ({
+    const hasPurchased = !!purchase;
+
+    // 🔒 Not purchased
+    if (!hasPurchased) {
+      course.modules = course.modules.map(({ assetLink, test, ...m }) => ({
         ...m,
         locked: true,
+        test: test
+          ? {
+            ...test,
+            questions: test.questions.map(
+              ({ correctOptionIndex, ...q }) => q
+            ),
+          }
+          : undefined,
       }));
 
       return res.json({
@@ -88,21 +66,37 @@ export const getUserOneCourseController = async (req, res) => {
       });
     }
 
-    // 🔹 Purchased → unlock based on progress
+    // 🔓 Purchased → unlock based on progress
+    const progress = await CourseProgress.findOne({
+      user: userId,
+      course: courseId,
+    });
+
+    const unlockedUpto = progress?.currentUnlockedModuleIndex ?? 0;
+
     course.modules = course.modules.map((module, index) => {
-      // 🔓 unlocked
-      if (index <= progress.currentUnlockedModuleIndex) {
+      const safeTest = module.test
+        ? {
+          ...module.test,
+          questions: module.test.questions.map(
+            ({ correctOptionIndex, ...q }) => q
+          ),
+        }
+        : undefined;
+
+      if (index <= unlockedUpto) {
         return {
           ...module,
           locked: false,
+          test: safeTest,
         };
       }
 
-      // 🔒 locked → REMOVE assetLink
       const { assetLink, ...safeModule } = module;
       return {
         ...safeModule,
         locked: true,
+        test: safeTest,
       };
     });
 
@@ -110,10 +104,10 @@ export const getUserOneCourseController = async (req, res) => {
       success: true,
       course,
       hasPurchased: true,
-      unlockedUpto: progress.currentUnlockedModuleIndex,
+      unlockedUpto,
     });
   } catch (error) {
-    console.error('Get one course error:', error);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("Get one course error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
