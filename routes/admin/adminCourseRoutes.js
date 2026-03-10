@@ -61,7 +61,7 @@ router.patch(
 router.patch(
   '/edit-module/:courseId/:moduleId',
   adminAuthMiddlware,
-  getUploader('disk').single('file'),
+  getUploader('disk').single('asset'),
   editModuleController
 );
 
