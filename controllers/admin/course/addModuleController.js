@@ -9,7 +9,7 @@ export const addModuleController = async (req, res) => {
   console.log("BODY:", req.body);
   console.log("FILE:", req.file);
 
-  if (!file || !title || !description || !type) {
+  if (!file || !title || !type) {
     return res.status(400).json({
       message: "All module fields and file are required"
     });
