@@ -1,53 +1,77 @@
 import fs from "fs";
+import path from "path";
 import Course from "../../../models/courseModel.js";
-import cloudinary from "../../../utils/cloudinaryConfig.js";
 
 export const editModuleController = async (req, res) => {
+
   const { courseId, moduleId } = req.params;
   const { title, description } = req.body;
   const file = req.file;
 
   try {
+
     // Find course
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ message: "Course not found" });
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found"
+      });
+    }
 
-    // Find module inside course
+    // Find module
     const module = course.modules.id(moduleId);
-    if (!module) return res.status(404).json({ message: "Module not found" });
+    if (!module) {
+      return res.status(404).json({
+        message: "Module not found"
+      });
+    }
 
-    // Update title & description
+    // Update text fields
     if (title) module.title = title;
     if (description) module.description = description;
 
-    // 🚀 If user uploaded new file → Upload to Cloudinary
+    // If new file uploaded
     if (file) {
-      const uploadResult = await cloudinary.uploader.upload(file.path, {
-        folder: "module_data",
-        resource_type: module.type === "video" ? "video" : "raw",
-        chunk_size: 6 * 1024 * 1024,
-        timeout: 180000,
-        use_filename: true,
-        unique_filename: false,
-      });
 
-      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      // Delete old file from server
+      if (module.assetLink) {
 
-      if (!uploadResult.secure_url) {
-        return res.status(500).json({ message: "Upload failed" });
+        const oldFileName = module.assetLink.split("/uploads/")[1];
+
+        const oldFilePath = path.join(
+          process.cwd(),
+          "uploads",
+          oldFileName
+        );
+
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
       }
 
-      module.assetLink = uploadResult.secure_url; // Replace old file URL
+      // Generate new file URL
+      const fileUrl =
+        `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+
+      // Replace module file
+      module.assetLink = fileUrl;
     }
 
     await course.save();
 
     return res.status(200).json({
       message: "Module updated successfully",
-      module,
+      module
     });
+
   } catch (error) {
+
     console.error("Edit module error:", error);
-    return res.status(500).json({ message: "Internal error", error });
+
+    return res.status(500).json({
+      message: "Internal error",
+      error
+    });
+
   }
 };
