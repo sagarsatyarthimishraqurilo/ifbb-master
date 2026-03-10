@@ -25,7 +25,6 @@
 
 
   dotenv.config();
-
   const app = express();
 
   // ⭐ MUST USE Render PORT
@@ -52,7 +51,6 @@
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
   app.use(morgan("dev"));
 
   // Routes
@@ -70,10 +68,6 @@
   app.use("/api", certificateRoutes);
   app.use("/api/admin", adminGalleryRoutes);
   app.use("/api", commonGalleryRoutes);
-  app.use("/uploads", express.static("uploads"));
-
-
-            
   app.use("/uploads", express.static("uploads"));
 
   app.get("/", (req, res) => {

@@ -22,7 +22,7 @@ const ModuleSchema = new Schema({
   },
   description: {
     type: String,
-    required: [true, 'Module description is required'],
+    default:"",
   },
   type: {
     type: String,
