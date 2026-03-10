@@ -59,7 +59,7 @@ export const getUploader = (type = "disk") => {
     storage,
 
     limits: {
-      fileSize: Number.MAX_SAFE_INTEGER, // 🚀 practically unlimited
+      fileSize: 200 * 1024 * 1024 // 200MB
     },
 
     fileFilter: (req, file, cb) => {
