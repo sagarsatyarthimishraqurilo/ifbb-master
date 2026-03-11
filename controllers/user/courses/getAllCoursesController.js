@@ -4,7 +4,7 @@ import User from "../../../models/userModel.js";
 export const getAllCoursesController = async (req, res) => {
   try {
 
-    const userId = req.user.userId;;
+    const { userId } = req.query;
 
     let query = { isPublic: true };
 

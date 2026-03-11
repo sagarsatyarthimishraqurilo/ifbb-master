@@ -47,7 +47,6 @@ router.get(
  */
 router.get(
   '/get-all-courses',
-  userAuthMiddleware,
   getAllCoursesController
 );
 
