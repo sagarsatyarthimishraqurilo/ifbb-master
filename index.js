@@ -23,7 +23,6 @@
   import commonGalleryRoutes from "./routes/common/galleryRoutes.js";
 
 
-
   dotenv.config();
   const app = express();
 
