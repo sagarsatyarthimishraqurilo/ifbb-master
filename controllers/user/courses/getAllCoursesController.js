@@ -4,23 +4,21 @@ import User from "../../../models/userModel.js";
 export const getAllCoursesController = async (req, res) => {
   try {
 
-    let purchasedCourses = [];
+    const { userId } = req.body;
 
-    // if user logged in
-    if (req.user && req.user.userId) {
+    let query = { isPublic: true };
 
-      const user = await User.findById(req.user.userId).select("purchasedCourses");
+    // if userId is provided
+    if (userId) {
+
+      const user = await User.findById(userId).select("purchasedCourses");
 
       if (user && user.purchasedCourses.length > 0) {
-        purchasedCourses = user.purchasedCourses;
+        query._id = { $nin: user.purchasedCourses };
       }
     }
 
-    // filter courses which are NOT purchased
-    const courses = await Course.find({
-      isPublic: true,
-      _id: { $nin: purchasedCourses }
-    }).lean();
+    const courses = await Course.find(query).lean();
 
     return res.json({
       success: true,
