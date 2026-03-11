@@ -17,23 +17,26 @@ const TestQuestionSchema = new Schema({
 const ModuleSchema = new Schema({
   title: {
     type: String,
-    required: [true, 'Module title is required'],
+    required: [true, "Module title is required"],
     trim: true,
   },
+
   description: {
     type: String,
-    default:"",
+    default: "",
   },
+
   type: {
     type: String,
-    enum: ['video', 'pdf'],
-    required: [true, 'Module type is required'],
+    enum: ["video", "pdf"],
+    required: [true, "Module type is required"],
   },
+
   assetLink: {
-    type: String,
-    required: [true, 'Asset link is required'],
+    type: [String], // ✅ ARRAY
+    required: true,
   },
-  // ✅ NEW
+
   test: {
     questions: [TestQuestionSchema],
     passPercentage: {

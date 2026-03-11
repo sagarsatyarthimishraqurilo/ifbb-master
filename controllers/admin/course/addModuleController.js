@@ -4,20 +4,20 @@ export const addModuleController = async (req, res) => {
 
   const { courseId } = req.params;
   const { title, description, type } = req.body;
-  const file = req.file;
+  const files = req.files;
 
   console.log("BODY:", req.body);
-  console.log("FILE:", req.file);
+  console.log("FILES:", req.files);
 
-  if (!file || !title || !type) {
+  if (!files || files.length === 0 || !title || !type) {
     return res.status(400).json({
-      message: "All module fields and file are required"
+      message: "All module fields and files are required",
     });
   }
 
   if (!["video", "pdf"].includes(type)) {
     return res.status(400).json({
-      message: "Invalid module type"
+      message: "Invalid module type",
     });
   }
 
@@ -27,22 +27,22 @@ export const addModuleController = async (req, res) => {
 
     if (!course) {
       return res.status(404).json({
-        message: "Course Not Found"
+        message: "Course Not Found",
       });
     }
 
-    // Create public URL for uploaded file
-    const fileUrl =
-      `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+    // create urls
+    const assetLinks = files.map(file =>
+      `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
+    );
 
     const newModule = {
       title,
       description,
       type,
-      assetLink: fileUrl,
+      assetLink: assetLinks, // ✅ array save
     };
 
-    // Add module
     course.modules.push(newModule);
 
     await course.save();

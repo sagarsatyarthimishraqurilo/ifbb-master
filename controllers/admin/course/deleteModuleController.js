@@ -14,7 +14,7 @@ export const deleteModuleController = async (req, res) => {
 
   try {
 
-    // Find course containing the module
+    // find course containing this module
     const course = await Course.findOne({ "modules._id": moduleId });
 
     if (!course) {
@@ -23,7 +23,6 @@ export const deleteModuleController = async (req, res) => {
       });
     }
 
-    // Get module
     const module = course.modules.id(moduleId);
 
     if (!module) {
@@ -32,30 +31,34 @@ export const deleteModuleController = async (req, res) => {
       });
     }
 
-    // Delete file from server
-    if (module.assetLink) {
+    // ✅ assetLink is now an ARRAY
+    if (module.assetLink && module.assetLink.length > 0) {
 
-      const fileName =
-        module.assetLink.split("/uploads/")[1];
+      for (const link of module.assetLink) {
 
-      const filePath = path.join(
-        process.cwd(),
-        "uploads",
-        fileName
-      );
+        const fileName = link.split("/uploads/")[1];
 
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+        if (!fileName) continue;
+
+        const filePath = path.join(
+          process.cwd(),
+          "uploads",
+          fileName
+        );
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       }
     }
 
-    // Remove module from course
+    // remove module from course
     course.modules.pull(moduleId);
 
     await course.save();
 
     return res.status(200).json({
-      message: "Module and file deleted successfully"
+      message: "Module and files deleted successfully"
     });
 
   } catch (error) {

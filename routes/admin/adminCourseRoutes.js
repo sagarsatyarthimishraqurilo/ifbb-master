@@ -20,9 +20,9 @@ router.post(
 );
 
 router.post(
-  '/add-module-to-course/:courseId',
+  "/add-module-to-course/:courseId",
   adminAuthMiddlware,
-  getUploader('disk').single('asset'),
+  getUploader("disk").array("assets", 10), // max 10 files
   addModuleController
 );
 
