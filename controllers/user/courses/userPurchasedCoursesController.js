@@ -1,70 +1,60 @@
-// import User from '../../../models/userModel.js';
-
-// const userPurchasedCoursesController = async (req, res) => {
-//   try {
-//     const userId = req.user.userId;
-
-//     const user = await User.findById(userId)
-//       .populate({
-//         path: 'purchasedCourses',
-//         select: 'title courseThumbnail description durationToComplete',
-//       });
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       purchasedCourses: user.purchasedCourses,
-//     });
-//   } catch (error) {
-//     console.error('User Purchased Courses Error:', error);
-//     return res.status(500).json({
-//       success: false,
-//       message: 'Could not fetch purchased courses',
-//     });
-//   }
-// };
-
-// export default userPurchasedCoursesController;
-import User from '../../../models/userModel.js';
+import User from "../../../models/userModel.js";
+import Purchase from "../../../models/purchaseModel.js";
+import Course from "../../../models/courseModel.js";
 
 const userPurchasedCoursesController = async (req, res) => {
   try {
+
     const userId = req.user.userId;
 
-    const user = await User.findById(userId).populate({
-      path: 'purchasedCourses',
-    });
+    // 1️⃣ Get user
+    const user = await User.findById(userId).select("purchasedCourses");
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    const courses = user.purchasedCourses.map((course) => {
-      const courseObj = course.toObject();
-      const totalModules = courseObj.modules?.length || 0;
+    // 2️⃣ Get purchase documents
+    const purchases = await Purchase.find({
+      _id: { $in: user.purchasedCourses }
+    });
 
-      // ❌ modules hata diye
-      const { modules, ...courseWithoutModules } = courseObj;
+    // 3️⃣ Extract courseIds
+    const courseIds = purchases.map(p => p.course);
+
+    // 4️⃣ Fetch courses
+    const courses = await Course.find({
+      _id: { $in: courseIds }
+    }).lean();
+
+    // 5️⃣ Format response
+    const formattedCourses = courses.map(course => {
+
+      const totalModules = course.modules?.length || 0;
+
+      const { modules, ...courseWithoutModules } = course;
 
       return {
         ...courseWithoutModules,
-        totalModules,   
-        hasPurchased: true,
+        totalModules,
+        hasPurchased: true
       };
     });
 
     return res.status(200).json({
       success: true,
-      purchasedCourses: courses,
+      purchasedCourses: formattedCourses
     });
+
   } catch (error) {
-    console.error('User Purchased Courses Error:', error);
+    console.error("User Purchased Courses Error:", error);
+
     return res.status(500).json({
       success: false,
-      message: 'Could not fetch purchased courses',
+      message: "Could not fetch purchased courses",
     });
   }
 };

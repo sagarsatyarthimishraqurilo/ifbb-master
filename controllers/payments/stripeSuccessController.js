@@ -38,7 +38,7 @@ const stripeSuccessController = async (req, res) => {
             });
         }
 
-        // 3️⃣ User (EMAIL SE)
+        // 3️⃣ User
         const user = await User.findOne({ email: session.customer_email });
 
         if (!user) {
@@ -62,7 +62,7 @@ const stripeSuccessController = async (req, res) => {
         }
 
         // 5️⃣ Save purchase
-        await Purchase.create({
+        const purchase = await Purchase.create({
             user: user._id,
             course: courseId,
             amountPaid: session.amount_total / 100,
@@ -71,11 +71,18 @@ const stripeSuccessController = async (req, res) => {
             paymentStatus: "paid",
         });
 
-        // 6️⃣ Update user
-        if (!user.purchasedCourses.includes(courseId)) {
-            user.purchasedCourses.push(courseId);
+        // 6️⃣ Update user → store purchaseId instead of courseId
+        if (!user.purchasedCourses.includes(purchase._id)) {
+            user.purchasedCourses.push(purchase._id);
             await user.save();
         }
+
+        // 7️⃣ Increment enrolled user count
+        await Course.findByIdAndUpdate(
+            courseId,
+            { $inc: { total_enrolled_user: 1 } },
+            { new: true }
+        );
 
         // 7️⃣ Create course progress
         await CourseProgress.create({
@@ -90,10 +97,12 @@ const stripeSuccessController = async (req, res) => {
         return res.json({
             success: true,
             message: "Payment successful, course enrolled",
-            courseId,
+            purchaseId: purchase._id,
         });
+
     } catch (error) {
         console.error("Stripe success error:", error);
+
         return res.status(500).json({
             success: false,
             message: "Payment verification failed",

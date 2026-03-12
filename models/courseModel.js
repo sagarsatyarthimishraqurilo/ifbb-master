@@ -132,6 +132,11 @@ const CourseSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    
+    total_enrolled_user: {
+      type: Number,
+      default: 0
+    }
   },
   { timestamps: true }
 );
