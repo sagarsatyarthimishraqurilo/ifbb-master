@@ -1,6 +1,6 @@
 import express from "express";
 import adminAuthMiddleware from "../../middleware/adminAuthMiddleware.js";
-import getAllCourseInquiriesController from "../../controllers/admin/inquiry/getAllCourseInquiriesController.js";
+import { getAllCourseInquiriesController, seeenNotificationController } from "../../controllers/admin/inquiry/getAllCourseInquiriesController.js";
 
 const router = express.Router();
 
@@ -10,5 +10,11 @@ router.get(
   adminAuthMiddleware,
   getAllCourseInquiriesController
 );
+
+router.get(
+  "/seen-notification/:notification_id",
+  adminAuthMiddleware,
+  seeenNotificationController
+)
 
 export default router;
