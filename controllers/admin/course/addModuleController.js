@@ -1,5 +1,6 @@
 import Course from "../../../models/courseModel.js";
 
+
 export const addModuleController = async (req, res) => {
 
   const { courseId } = req.params;
@@ -31,9 +32,11 @@ export const addModuleController = async (req, res) => {
       });
     }
 
+    const BASE_URL = process.env.BASE_URL;
+
     // create urls
     const assetLinks = files.map(file =>
-      `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
+      `${BASE_URL}/uploads/${file.filename}`
     );
 
     const newModule = {

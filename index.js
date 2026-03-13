@@ -30,7 +30,6 @@ const PORT = process.env.PORT || 5003;
 
 // Middlewares
 app.use(cookieParser());
-app.set("trust proxy", true);
 
 app.use(
   cors({
