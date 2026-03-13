@@ -32,22 +32,17 @@
   // Middlewares
   app.use(cookieParser());
 
-  app.use(
-    cors({
-      origin: [
-        "https://ifbb-admin-7x6r.vercel.app",
-        "https://ifbb-frontend-main-f6sr.vercel.app",
-        "http://localhost:5002",   // Admin Panel Local
-        "https://ifbb-1.onrender.com", // Example admin domain
-        "http://localhost:5003",
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5001",
-        "https://393rb0pp-5003.inc1.devtunnels.ms"
-      ],
-      credentials: true,
-    })
-  );
+app.use(
+  cors({
+    origin: [
+      "https://ifbb-admin-7wp6.vercel.app",
+      "https://ifbb-frontend-main-f6sr.vercel.app",
+      "http://localhost:5001",
+      "http://localhost:3000"
+    ],
+    credentials: true,
+  })
+);
 
 
   app.use(express.json());
