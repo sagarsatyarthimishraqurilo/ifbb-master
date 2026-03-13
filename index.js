@@ -35,6 +35,7 @@
   app.use(
     cors({
       origin: [
+        "https://ifbb-admin-7x6r.vercel.app",
         "http://localhost:5002",   // Admin Panel Local
         "https://ifbb-1.onrender.com", // Example admin domain
         "http://localhost:5003",
