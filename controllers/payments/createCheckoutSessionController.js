@@ -23,7 +23,7 @@ const createCheckoutSession = async (req, res) => {
               name: course.title,
               description: course.description,
             },
-            unit_amount: Number(course.price),
+            unit_amount: Math.round(Number(course.price) * 100),
           },
           quantity: 1,
         },
