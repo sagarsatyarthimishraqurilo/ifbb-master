@@ -39,6 +39,7 @@ export const addCourseController = async (req, res) => {
       description,
       price,
       discountedPrice,
+      actual_price: Number(price) - Number(price * discountedPrice / 100),
       durationToComplete,
       courseThumbnail: result.secure_url,
     });

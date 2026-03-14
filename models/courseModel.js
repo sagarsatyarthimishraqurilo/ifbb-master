@@ -98,6 +98,11 @@ const CourseSchema = new Schema(
       },
     },
 
+    actual_price: {
+      type: Number,
+      default: 0
+    },
+
     purchasedByHowMuch: {
       type: Number,
       default: 0,
@@ -132,7 +137,7 @@ const CourseSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    
+
     total_enrolled_user: {
       type: Number,
       default: 0
