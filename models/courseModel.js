@@ -98,9 +98,9 @@ const CourseSchema = new Schema(
       },
     },
 
-    actual_price: {
-      type: Number,
-      default: 0
+    actual_price:{
+      type: mongoose.Schema.Types.Decimal128,
+      default:0
     },
 
     purchasedByHowMuch: {
@@ -137,7 +137,7 @@ const CourseSchema = new Schema(
       type: Boolean,
       default: false,
     },
-
+    
     total_enrolled_user: {
       type: Number,
       default: 0
