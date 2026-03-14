@@ -13,7 +13,7 @@ export const editCourseController = async (req, res) => {
 
     let thumbnailUrl = course.courseThumbnail;
 
-    // Upload new thumbnail (if provided)
+    // Upload new thumbnail
     if (req.file) {
       const uploaded = await cloudinary.uploader.upload(req.file.path, {
         folder: "course_thumbnails",
@@ -21,15 +21,30 @@ export const editCourseController = async (req, res) => {
       });
 
       thumbnailUrl = uploaded.secure_url;
-      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
     }
 
-    // Update fields
+    // Update basic fields
     if (title) course.title = title;
     if (description) course.description = description;
-    if (price) course.price = price;
-    if (discountedPrice) course.discountedPrice = discountedPrice;
     if (durationToComplete) course.durationToComplete = durationToComplete;
+
+    // Take existing values if new ones not provided
+    const updatedPrice = price ? Number(price) : Number(course.price);
+    const updatedDiscount = discountedPrice
+      ? Number(discountedPrice)
+      : Number(course.discountedPrice || 0);
+
+    // Update price fields
+    if (price) course.price = updatedPrice;
+    if (discountedPrice) course.discountedPrice = updatedDiscount;
+
+    // 🔹 Recalculate actual price
+    const actualPrice = updatedPrice - (updatedPrice * updatedDiscount) / 100;
+    course.actual_price = actualPrice;
 
     course.courseThumbnail = thumbnailUrl;
 
@@ -39,7 +54,11 @@ export const editCourseController = async (req, res) => {
       message: "Course updated successfully",
       course,
     });
+
   } catch (error) {
-    res.status(500).json({ message: "Error updating course", error: error.message });
+    res.status(500).json({
+      message: "Error updating course",
+      error: error.message,
+    });
   }
 };
